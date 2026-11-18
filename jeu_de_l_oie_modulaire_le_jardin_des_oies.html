@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeOie - Le Jardin des Oies</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #2c3e50; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .setup-section, .game-section {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #2980b9; }
+        input {
+            padding: 8px;
+            font-size: 16px;
+            width: 60px;
+            text-align: center;
+        }
+        #log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: left;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            margin-top: 20px;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Jeu de l'Oie : Le Jardin des Oies & Cartes Actions</h1>
+    
+    <div id="setup" class="setup-section">
+        <label for="numTeams">Nombre d'équipes (2 à 10) : </label>
+        <input type="number" id="numTeams" min="2" max="10" value="2">
+        <br><br>
+        <button onclick="startGame()">Lancer la partie</button>
+    </div>
+
+    <div id="game" class="game-section hidden">
+        <h2 id="turnInfo">Tour de l'équipe 1</h2>
+        <button onclick="playTurn()">Lancer le dé 🎲</button>
+        <button onclick="useActionCard()" style="background-color: #e67e22;">Utiliser une Carte Action 🃏</button>
+        
+        <div id="log"></div>
+    </div>
+</div>
+
+<script>
+    let teams = [];
+    let currentTurn = 0;
+    let gameActive = false;
+
+    function startGame() {
+        const count = parseInt(document.getElementById('numTeams').value);
+        if (count < 2 || count > 10) {
+            alert("Veuillez choisir entre 2 et 10 équipes.");
+            return;
+        }
+        
+        teams = [];
+        for (let i = 1; i <= count; i++) {
+            teams.push({ name: `Équipe ${i}`, position: 0, cards: 2 });
+        }
+
+        document.getElementById('setup').classList.add('hidden');
+        document.getElementById('game').classList.remove('hidden');
+        gameActive = true;
+        
+        logMessage("La partie commence ! Bon jeu à toutes les équipes.");
+        updateTurnInfo();
+    }
+
+    function playTurn() {
+        if (!gameActive) return;
+        let team = teams[currentTurn];
+        let dice = Math.floor(Math.random() * 6) + 1;
+        
+        team.position += dice;
+        logMessage(`${team.name} lance le dé et fait ${dice}. Position actuelle : case ${team.position}`);
+
+        if (team.position >= 30) {
+            logMessage(`🏆 ${team.name} a gagné la partie ! Félicitations !`);
+            gameActive = false;
+            return;
+        }
+
+        currentTurn = (currentTurn + 1) % teams.length;
+        updateTurnInfo();
+    }
+
+    function useActionCard() {
+        if (!gameActive) return;
+        let team = teams[currentTurn];
+        if (team.cards > 0) {
+            team.cards--;
+            let bonus = Math.floor(Math.random() * 3) + 1;
+            team.position += bonus;
+            logMessage(`🃏 ${team.name} utilise une Carte Action spéciale ! Avance bonus de +${bonus} cases (Position: ${team.position}).`);
+        } else {
+            logMessage(`❌ ${team.name} n'a plus de Cartes Actions en stock !`);
+        }
+    }
+
+    function updateTurnInfo() {
+        if (!gameActive) return;
+        document.getElementById('turnInfoinnerText', document.getElementById('turnInfo').innerText = `C'est au tour de : ${teams[currentTurn].name} (Cartes dispo: ${teams[currentTurn].cards})`);
+    }
+
+    function logMessage(msg) {
+        const log = document.getElementById('log');
+        log.innerHTML += `<div>> ${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
